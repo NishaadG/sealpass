@@ -1,0 +1,50 @@
+/* Lab page. */
+.lab-grid { display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 18px; margin-top: 26px; align-items: start; }
+@media (max-width: 1040px) { .lab-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) { .lab-grid { grid-template-columns: 1fr; } }
+.role { min-height: 420px; }
+.pass-list { display: grid; gap: 6px; max-height: 300px; overflow-y: auto; }
+.pl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--bg-raise); font-size: 0.86rem; }
+.pl-row .mono { word-break: break-all; }
+.pl-row.rev { opacity: 0.6; }
+.lab-phone { border-radius: 26px; border: 2px solid var(--line-strong); padding: 16px 14px; background: var(--bg-raise); max-width: 280px; margin: 0 auto; }
+.lp-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.lp-qr { display: grid; place-items: center; min-height: 240px; margin-bottom: 8px; }
+.lp-qr canvas { cursor: grab; width: 220px; height: 220px; background: var(--paper-qr); }
+.shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.shot { display: grid; justify-items: center; gap: 4px; padding: 8px; border-radius: 10px; background: var(--bg-raise); border: 1px solid var(--line); }
+.shot canvas { cursor: grab; border-radius: 4px; }
+.shot.stale { border-color: color-mix(in srgb, var(--vermilion) 50%, transparent); }
+.shot.stale .age { color: var(--vermilion); }
+.dropzone { margin-top: 12px; border: 2px dashed var(--line-strong); border-radius: 14px; min-height: 120px; display: grid; place-content: center; gap: 10px; text-align: center; transition: border-color 0.2s, background 0.2s; }
+.dropzone.over { border-color: var(--saffron); background: var(--saffron-soft); }
+.dropzone.hit { border-color: var(--teal); background: var(--teal-soft); }
+.dz-txt { color: var(--muted); font-size: 0.9rem; }
+.role .pipe-step { padding: 6px 10px; }
+.role .pipe-step .dot { width: 24px; height: 24px; font-size: 0.7rem; }
+.role .pipe-step .det { font-size: 0.78rem; }
+
+.threat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 960px) { .threat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .threat-grid { grid-template-columns: 1fr; } }
+.threat { text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--vermilion); border-radius: 12px; padding: 12px 14px; cursor: pointer; display: grid; gap: 4px; transition: background 0.2s, border-color 0.2s; }
+.threat span { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.threat:hover { background: var(--panel-2); }
+.threat.on { border-color: var(--vermilion); background: var(--vermilion-soft); }
+.attempts { display: grid; gap: 14px; margin-top: 12px; }
+.attempt { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--bg-raise); }
+.att-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.att-body { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; }
+@media (max-width: 640px) { .att-body { grid-template-columns: 1fr; } }
+.att-qr { padding: 8px; }
+.att-pipe { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+@media (max-width: 900px) { .att-pipe { grid-template-columns: 1fr; } }
+.att-pipe .pipe-step { padding: 5px 8px; grid-template-columns: 22px 1fr; gap: 8px; }
+.att-pipe .pipe-step .dot { width: 22px; height: 22px; font-size: 0.66rem; }
+.att-pipe .pipe-step .name { font-size: 0.82rem; }
+.att-pipe .pipe-step .det { font-size: 0.74rem; }
+.chain-mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 640px) { .chain-mini { grid-template-columns: 1fr 1fr; } }
+.cm { display: grid; gap: 2px; padding: 10px; border-radius: 10px; background: var(--bg-raise); border: 1px solid var(--line-strong); font-size: 0.84rem; }
+.cm.bad { border-color: var(--vermilion); background: var(--vermilion-soft); }
+.cm.after { border-style: dashed; border-color: var(--vermilion); opacity: 0.8; }

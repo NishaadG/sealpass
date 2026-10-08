@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SealPass Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e8ae4a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/devices.css">
+</head>
+<body>
+<main class="wrap dash">
+  <div class="row spread" style="margin-bottom:18px">
+    <div>
+      <p class="kicker">Live demonstration</p>
+      <h2 style="margin:0">Admissions control room</h2>
+    </div>
+    <div class="row">
+      <button class="btn ghost sm" id="pairBtn" type="button">Connect phones</button>
+      <button class="btn ghost sm" id="resetBtn" type="button">Reset demo</button>
+    </div>
+  </div>
+
+  <section class="card flat hidden" id="pairCard" style="margin-bottom:18px">
+    <p class="panel-title">Scan these with the two phones (same Wi-Fi)</p>
+    <div class="pair" id="pair"></div>
+    <p class="small muted" style="margin-top:12px">The phones will warn once that the certificate is not publicly trusted: it was issued by our own Campus Root CA. Either accept it, or install the root certificate first (third code) so the browser trusts the chain properly. Without HTTPS the gate can still scan by taking a photo.</p>
+  </section>
+
+  <div class="grid g3" style="margin-bottom:18px" id="stats"></div>
+
+  <div class="dash-grid">
+    <section class="card flat">
+      <p class="panel-title">Scans, newest first</p>
+      <div class="feed" id="feed"><p class="muted small">Waiting for the first scan. Open /phone and /gate on two phones.</p></div>
+    </section>
+    <section class="card flat">
+      <p class="panel-title">Selected scan</p>
+      <div id="selVerdict"></div>
+      <div id="selPipe" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <section class="card flat" style="margin-top:18px">
+    <div class="row spread">
+      <p class="panel-title" style="margin:0">Attendance ledger (SHA-256 hash chain)</p>
+      <span class="chip" id="chainStatus">-</span>
+    </div>
+    <p class="small muted" style="margin:8px 0 12px">Each block stores the hash of the one before it. Editing any old entry breaks every link after it.</p>
+    <div class="chain" id="chain"></div>
+  </section>
+</main>
+<script src="/static/vendor/qrcode.min.js"></script>
+<script src="/static/js/crypto.js"></script>
+<script src="/static/js/ui.js"></script>
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

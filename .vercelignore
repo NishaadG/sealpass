@@ -1,0 +1,7 @@
+.venv
+__pycache__
+.pytest_cache
+pki/out
+data
+tests
+THEORY.md

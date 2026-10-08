@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SealPass Phone</title>
+<meta name="theme-color" content="#131b31">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e8ae4a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/devices.css">
+</head>
+<body class="device">
+<main class="wrap phone-wrap">
+
+  <section id="enrol" class="card certificate">
+    <p class="panel-title">Enrolment</p>
+    <h2 class="serif">Get your pass</h2>
+    <p class="muted small">The Pass Authority signs your pass and sends your personal HMAC key over TLS. The key stays on this phone and makes the code change every 10 seconds, even offline.</p>
+    <div class="stack">
+      <label class="field">Student<select id="student"></select></label>
+      <label class="field">Event<select id="event"></select></label>
+      <button class="btn" id="enrolBtn" type="button">Issue my pass</button>
+      <p id="enrolErr" class="small val-red"></p>
+    </div>
+  </section>
+
+  <section id="pass" class="pass hidden">
+    <svg class="pass-guilloche" aria-hidden="true"></svg>
+    <div class="pass-head">
+      <div>
+        <div class="kicker" id="pEventKind"></div>
+        <div class="pass-event" id="pEvent"></div>
+      </div>
+      <div class="pass-seal" id="pSeal"></div>
+    </div>
+    <div class="pass-qr">
+      <div class="qr-frame"><canvas id="qr"></canvas></div>
+    </div>
+    <div class="pass-live">
+      <svg class="ring" id="ring"></svg>
+      <div>
+        <div class="live-clock" id="liveClock">--:--:--</div>
+        <div class="small muted">slot <span class="mono" id="slot">-</span> &middot; new code in <span id="secs">-</span> s</div>
+      </div>
+    </div>
+    <div class="pass-who">
+      <div class="pass-name" id="pName"></div>
+      <div class="mono small" id="pRoll"></div>
+    </div>
+    <div class="microtext" id="micro"></div>
+    <details class="pass-details">
+      <summary>What is inside this code</summary>
+      <dl class="kv small" id="pKv"></dl>
+      <p class="small muted">The moving pattern and ticking clock show a person at the gate that this is a live screen, not a photo. The cryptography is what actually decides.</p>
+    </details>
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <button class="btn ghost sm" id="switchBtn" type="button">Switch pass</button>
+    </div>
+  </section>
+</main>
+
+<script src="/static/vendor/qrcode.min.js"></script>
+<script src="/static/js/crypto.js"></script>
+<script src="/static/js/ui.js"></script>
+<script src="/static/js/phone.js"></script>
+</body>
+</html>
