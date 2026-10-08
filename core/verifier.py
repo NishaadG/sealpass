@@ -17,6 +17,7 @@ from sealcrypto.ec import P256
 from . import ledger, passfmt
 from .pki import check_chain
 
+IST_OFFSET = 19800  # messages show India time, whatever the server's own timezone
 FRESHNESS_SLOTS = 1  # accept the current slot and one either side (about 20 s)
 
 STEPS = [
@@ -137,7 +138,7 @@ class GateVerifier:
         pid = _hex(body.pass_id)
         if pid in self.admitted:
             first = self.admitted[pid]
-            return fail("once", f"Already admitted at {time.strftime('%H:%M:%S', time.localtime(first['time']))} "
+            return fail("once", f"Already admitted at {time.strftime('%H:%M:%S', time.gmtime(first['time'] + IST_OFFSET))} "
                                 f"by {first['gate']}: second use of the same pass (relay or copy)",
                         first_time=first["time"], first_gate=first["gate"])
         ok("once", "First use of this pass")
