@@ -6,3 +6,6 @@ pki/out/
 data/
 .vercel/
 .env*
+
+.vercel
+.env*
