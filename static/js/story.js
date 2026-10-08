@@ -196,41 +196,6 @@
   }
   drawFlow();
 
-  // ---------- 11 key tree ----------
-  function keyTree(stolen) {
-    const nodes = [
-      { id: "m", x: 280, y: 40, t: "K_master", s: "Pass Authority only", c: "saffron" },
-      { id: "e1", x: 140, y: 140, t: "K_event", s: "CNS-LAB-A2 gate", c: "teal" },
-      { id: "e2", x: 420, y: 140, t: "K_event", s: "TECHFEST-D1 gate", c: "teal" },
-      { id: "s1", x: 60, y: 260, t: "K_se", s: "IT-4101, lab", c: "azure" },
-      { id: "s2", x: 220, y: 260, t: "K_se", s: "IT-4102, lab", c: "azure" },
-      { id: "s3", x: 340, y: 260, t: "K_se", s: "IT-4101, fest", c: "azure" },
-      { id: "s4", x: 500, y: 260, t: "K_se", s: "IT-4105, fest", c: "azure" },
-    ];
-    const links = [["m", "e1"], ["m", "e2"], ["e1", "s1"], ["e1", "s2"], ["e2", "s3"], ["e2", "s4"]];
-    const by = Object.fromEntries(nodes.map((n) => [n.id, n]));
-    const hit = new Set(stolen ? ["e1", "s1", "s2"] : []);
-    $("keyTree").innerHTML = links.map(([a, b]) => `<path d="M${by[a].x} ${by[a].y + 22} C ${by[a].x} ${by[a].y + 62}, ${by[b].x} ${by[b].y - 62}, ${by[b].x} ${by[b].y - 22}" class="kt-link ${hit.has(b) && hit.has(a) ? "hit" : ""}"/>
-        <text x="${(by[a].x + by[b].x) / 2 + 6}" y="${(by[a].y + by[b].y) / 2}" class="kt-l">HMAC</text>`).join("") +
-      nodes.map((n) => `<g class="kt-node c-${n.c} ${hit.has(n.id) ? "hit" : ""}"><rect x="${n.x - 62}" y="${n.y - 22}" width="124" height="44" rx="10"/>
-        <text x="${n.x}" y="${n.y - 3}" class="t">${n.t}</text><text x="${n.x}" y="${n.y + 13}" class="s">${n.s}</text></g>`).join("");
-    $("stealTxt").textContent = stolen ? "Exposed: one event's tag keys. Safe: K_master, the other event, and the signing key, so no new passes can be made." : "";
-  }
-  let stolen = false;
-  $("stealBtn").addEventListener("click", () => { stolen = !stolen; keyTree(stolen); $("stealBtn").textContent = stolen ? "Restore" : "Steal a gate"; });
-  keyTree(false);
-
-  async function cert() {
-    const p = await SPUI.api("/api/pki");
-    $("certCard").innerHTML = `<div class="row spread"><p class="panel-title" style="margin:0">X.509 v3 certificate</p><span class="chip ${p.ok ? "teal" : "red"}">${p.ok ? "chain verified" : "chain broken"}</span></div>
-      <dl class="kv small" style="margin-top:12px">
-        <dt>Subject</dt><dd>${esc(p.subject)}</dd><dt>Issuer</dt><dd>${esc(p.issuer)}</dd>
-        <dt>Valid until</dt><dd>${esc(p.not_after)}</dd><dt>Key</dt><dd>EC P-256 (prime256v1), key id <span class="mono">${META ? META.authority.key_id : ""}</span></dd>
-        <dt>Key usage</dt><dd>digitalSignature, nonRepudiation</dd><dt>Signed with</dt><dd>ecdsa-with-SHA256 by the root</dd>
-        <dt>Check</dt><dd class="val-teal">${esc(p.detail)}</dd></dl>
-      <details style="margin-top:10px"><summary class="small muted">PEM</summary><pre class="code small">${esc(p.authority_pem)}</pre></details>`;
-  }
-
   // ---------- 12 pipeline demo ----------
   let demoPass = null, demoOffset = 0;
   async function demoCode(ageSeconds = 0) {
@@ -256,47 +221,8 @@
     $("pVerify").disabled = false;
   });
 
-  // ---------- 13 matrix ----------
-  function matrix() {
-    const steps = META.steps;
-    $("matrix").innerHTML = `<tr><th>Attack</th>${steps.map((s, i) => `<th title="${esc(s.name)}"><span class="vert">${i + 1}. ${esc(s.name)}</span></th>`).join("")}</tr>` +
-      C.matrix.map((r) => `<tr><td>${esc(r.attack)}</td>${steps.map((s) => `<td class="mc">${r.first === s.id ? '<span class="m-first" title="stops it first"></span>' : r.also.includes(s.id) ? '<span class="m-also" title="also catches it"></span>' : ""}</td>`).join("")}</tr>`).join("");
-  }
-
-  // ---------- 14 self-test + code ----------
-  async function selftest() {
-    $("stBtn").disabled = true;
-    $("stOut").innerHTML = '<p class="small muted">Running...</p>';
-    try {
-      const rows = await SPUI.api("/api/selftest");
-      const pass = rows.filter((r) => r.ok).length;
-      $("stOut").innerHTML = `<p class="small"><b class="${pass === rows.length ? "val-teal" : "val-red"}">${pass} of ${rows.length} checks passed</b></p>` +
-        rows.map((r) => `<div class="st-row ${r.ok ? "ok" : "no"}"><span class="st-mark">${r.ok ? SPUI.ICON.check : SPUI.ICON.cross}</span>
-          <div><div><b>${esc(r.name)}</b> <span class="chip">${esc(r.group)}</span></div><div class="small muted">${esc(r.detail)}</div></div><span class="mono small muted">${r.ms} ms</span></div>`).join("");
-    } catch (e) { $("stOut").innerHTML = `<p class="val-red small">${esc(e.message)}</p>`; }
-    $("stBtn").disabled = false;
-  }
-  $("stBtn").addEventListener("click", selftest);
-
-  const codeKeys = Object.keys(C.code);
-  $("codeTabs").innerHTML = codeKeys.map((k, i) => `<button type="button" data-k="${k}" class="${i ? "" : "on"}">${k}</button>`).join("");
-  const showCode = (k) => {
-    $("codeTabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.k === k));
-    $("codeView").innerHTML = highlight(C.code[k]);
-  };
-  $("codeTabs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => showCode(b.dataset.k)));
-  function highlight(src) {
-    return esc(src).split("\n").map((line) => {
-      const i = line.indexOf("#");
-      const code = i >= 0 ? line.slice(0, i) : line, com = i >= 0 ? line.slice(i) : "";
-      return code.replace(/\b(def|return|if|else|is|None|not|and|in|for)\b/g, '<span class="kw">$1</span>')
-        .replace(/(&quot;.*?&quot;|b&quot;.*?&quot;)/g, '<span class="str">$1</span>') + (com ? `<span class="com">${com}</span>` : "");
-    }).join("\n");
-  }
-  showCode(codeKeys[0]);
-
   // ---------- boot ----------
   SPUI.reveal();
-  heroInit().then(() => { matrix(); cert(); selftest(); SPUI.renderPipeline($("pPipe"), META.steps, null); })
+  heroInit().then(() => { SPUI.renderPipeline($("pPipe"), META.steps, null); })
     .catch((e) => console.error(e));
 })();

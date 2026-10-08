@@ -91,7 +91,7 @@
   setInterval(hmacTick, 250);
   hmacTick();
 
-  // =============== Elliptic curve canvas ===============
+  // =============== Toy-curve plot (used by the Schnorr demo) ===============
   const TOY = SP.TOY;
   const toyPoints = [];
   for (let x = 0n; x < TOY.p; x++) for (let y = 0n; y < TOY.p; y++) if (TOY.contains([x, y])) toyPoints.push([x, y]);
@@ -132,84 +132,6 @@
     }
     return { px, py, ox, oy, side };
   }
-
-  let ecSel = [], ecHop = null;
-  const ecCv = $("ecCanvas");
-  function ecDraw() {
-    const hl = {};
-    if (ecSel[0]) hl.P = ["P", ecSel[0], "--teal"];
-    if (ecSel[1]) hl.Q = ["Q", ecSel[1], "--azure"];
-    let R = null, info = {};
-    if (ecSel.length === 2) {
-      R = TOY.add(ecSel[0], ecSel[1], info);
-      if (R) { hl.R = ["P+Q", R, "--saffron"]; hl.nR = ["-(P+Q)", TOY.neg(R), "--vermilion"]; }
-    }
-    const geo = plot(ecCv, hl, (ctx, px, py) => {
-      if (ecHop) {
-        ctx.strokeStyle = css("--saffron"); ctx.globalAlpha = 0.65; ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        ecHop.forEach((p, i) => { if (p) (i ? ctx.lineTo(px(p[0]), py(p[1])) : ctx.moveTo(px(p[0]), py(p[1]))); });
-        ctx.stroke(); ctx.globalAlpha = 1;
-      }
-      if (R && info.lambda !== undefined) {
-        // the "line" y = lambda (x - x1) + y1 over F_97 wraps around: draw its points
-        const [x1, y1] = ecSel[0];
-        ctx.fillStyle = css("--saffron"); ctx.globalAlpha = 0.35;
-        for (let x = 0n; x < TOY.p; x++) {
-          const y = SP.mod(info.lambda * (x - x1) + y1, TOY.p);
-          ctx.fillRect(px(x) - 1.5, py(y) - 1.5, 3, 3);
-        }
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = css("--vermilion"); ctx.setLineDash([4, 4]);
-        ctx.beginPath(); ctx.moveTo(px(R[0]), py(R[1])); ctx.lineTo(px(R[0]), py(TOY.neg(R)[1])); ctx.stroke(); ctx.setLineDash([]);
-      }
-    });
-    ecCv._geo = geo;
-    if (ecSel.length === 0) $("ecInfo").innerHTML = "Click a point to choose P.";
-    else if (ecSel.length === 1) $("ecInfo").innerHTML = `P = (${ecSel[0]}). Now click Q, or click P again to double it.`;
-    else if (!R) $("ecInfo").innerHTML = `P and Q are mirror images, so P + Q = O, the point at infinity.`;
-    else {
-      const [x1, y1] = ecSel[0], [x2, y2] = ecSel[1];
-      const lamTxt = info.kind === "double"
-        ? `&lambda; = (3&middot;${x1}&sup2; + 3) &middot; (2&middot;${y1})<sup>&minus;1</sup> mod 97 = <b>${info.lambda}</b>`
-        : `&lambda; = (${y2} &minus; ${y1}) &middot; (${x2} &minus; ${x1})<sup>&minus;1</sup> mod 97 = <b>${info.lambda}</b>`;
-      $("ecInfo").innerHTML = `${info.kind === "double" ? "Tangent at P (doubling)." : "Chord through P and Q."} ${lamTxt}<br>
-        The faint dots are that line over F<sub>97</sub>. It meets the curve at -(P+Q) = (${TOY.neg(R)}). Reflecting gives <b class="val-saffron">P + Q = (${R})</b>.`;
-    }
-  }
-  ecCv.addEventListener("click", (ev) => {
-    const r = ecCv.getBoundingClientRect(), g = ecCv._geo;
-    const mx = ((ev.clientX - r.left) / r.width) * ecCv.width, my = ((ev.clientY - r.top) / r.height) * ecCv.height;
-    let best = null, bd = 1e9;
-    for (const p of toyPoints) {
-      const d = (g.px(p[0]) - mx) ** 2 + (g.py(p[1]) - my) ** 2;
-      if (d < bd) { bd = d; best = p; }
-    }
-    if (bd > 200) return;
-    ecHop = null;
-    if (ecSel.length >= 2) ecSel = [];
-    ecSel.push(best);
-    ecDraw();
-  });
-  $("ecMul").addEventListener("click", () => {
-    const k = BigInt(Math.max(1, Math.min(102, Number($("ecK").value) || 1)));
-    const steps = [];
-    const R = TOY.mul(k, TOY.g, steps);
-    ecSel = [];
-    ecHop = [TOY.g, ...steps.map((s) => s.point)];
-    ecDraw();
-    plot(ecCv, { G: ["G", TOY.g, "--teal"], R: [`${k}G`, R, "--saffron"] }, (ctx, px, py) => {
-      ctx.strokeStyle = css("--saffron"); ctx.globalAlpha = 0.7; ctx.lineWidth = 1.4; ctx.beginPath();
-      ecHop.filter(Boolean).forEach((p, i) => (i ? ctx.lineTo(px(p[0]), py(p[1])) : ctx.moveTo(px(p[0]), py(p[1]))));
-      ctx.stroke(); ctx.globalAlpha = 1;
-    });
-    const bits = k.toString(2);
-    $("ecSteps").innerHTML = `k = ${k} = ${bits}<sub>2</sub>. For each bit: double, then add G if the bit is 1.<br>` +
-      steps.map((s) => `<span class="${s.op === "add" ? "val-teal" : "val-saffron"}">${s.op === "add" ? "+G" : "x2"}</span>&rarr;${s.point ? `(${s.point})` : "O"}`).join(" ") +
-      `<br>${steps.length} group operations, instead of ${k - 1n} additions one at a time. For a 256-bit k that is about 384 operations instead of 2<sup>256</sup>.`;
-    $("ecInfo").innerHTML = `${k}G = (${R}). The saffron path is the sequence of points double-and-add visits.`;
-  });
-  ecDraw();
 
   // =============== Schnorr ===============
   let sc = { curve: "toy", x: null, P: null, sig: null, signed: null };
@@ -293,56 +215,5 @@
       <b class="${rec === x ? "val-red" : ""}">${rec === x ? "Match. The private key is exposed from two public signatures." : "no match"}</b>`;
   });
 
-  // =============== Number theory ===============
-  function fermat() {
-    const a = BigInt(Math.trunc(Number($("fa").value) || 0)), p = BigInt(Math.trunc(Number($("fp").value) || 0));
-    if (p < 3n) { $("fOut").textContent = "Choose p of at least 3."; return; }
-    const prime = millerRabin(p, 12).prime;
-    if (!prime) { $("fOut").innerHTML = `<span class="val-red">${p} is not prime</span>, so Fermat's theorem does not apply and a<sup>p&minus;2</sup> is not guaranteed to be the inverse.`; return; }
-    if (SP.mod(a, p) === 0n) { $("fOut").innerHTML = "0 has no inverse."; return; }
-    const e = p - 2n;
-    let r = 1n, b = SP.mod(a, p), trace = [];
-    for (const bit of e.toString(2)) {
-      r = (r * r) % p; if (bit === "1") r = (r * b) % p;
-      trace.push(r);
-    }
-    $("fOut").innerHTML = `${a}<sup>${e}</sup> mod ${p}, exponent in binary ${e.toString(2)}<br>square-and-multiply: ${trace.join(" &rarr; ")}<br>
-      inverse = <b class="val-teal">${r}</b> &nbsp; check: ${a}&middot;${r} mod ${p} = ${SP.mod(a * r, p)}`;
-  }
-  ["fa", "fp"].forEach((id) => $(id).addEventListener("input", fermat));
-  fermat();
-
-  function millerRabin(n, rounds) {
-    const out = [];
-    if (n < 4n) return { prime: n === 2n || n === 3n, out };
-    if (n % 2n === 0n) return { prime: false, out: [{ base: 2n, pass: false }] };
-    let s = 0n, d = n - 1n;
-    while (d % 2n === 0n) { d /= 2n; s++; }
-    for (let i = 0; i < rounds; i++) {
-      const a = 2n + SP.mod(SP.bytesToInt(randBytes(40)), n - 3n);
-      let x = SP.powmod(a, d, n), pass = x === 1n || x === n - 1n;
-      for (let r = 1n; !pass && r < s; r++) { x = (x * x) % n; pass = x === n - 1n; }
-      out.push({ base: a, pass });
-      if (!pass) return { prime: false, out, s, d };
-    }
-    return { prime: true, out, s, d };
-  }
-  $("mrBtn").addEventListener("click", () => {
-    const v = $("mrN").value;
-    const n = v === "p" ? SP.P256.p : v === "n" ? SP.P256.n : v === "3p" ? SP.P256.p * 3n : 561n;
-    const res = millerRabin(n, 10);
-    $("mrOut").innerHTML = `<p class="small mono">n = ${bigShort(n, 12)}</p>` +
-      res.out.map((r, i) => `<div class="mr-r ${r.pass ? "ok" : "no"}"><span class="mono small">round ${i + 1}</span><span class="mono small muted">a = ${bigShort(r.base, 6)}</span><span class="chip ${r.pass ? "teal" : "red"}">${r.pass ? "passes" : "witness: composite"}</span></div>`).join("") +
-      `<p class="small" style="margin-top:8px"><b class="${res.prime ? "val-teal" : "val-red"}">${res.prime ? `Probably prime (error below 4<sup>-${res.out.length}</sup>)` : "Definitely composite"}</b></p>`;
-  });
-
-  $("dlBtn").addEventListener("click", () => {
-    const x = randBelow(SP.TOY.n), P = SP.TOY.mul(x);
-    let R = SP.TOY.g, k = 1n;
-    while (!(R && R[0] === P[0] && R[1] === P[1])) { R = SP.TOY.add(R, SP.TOY.g); k++; }
-    $("dlOut").innerHTML = `public P = (${P})<br>trying G, 2G, 3G, ...<br>found x = <b class="val-red">${k}</b> after ${k} additions (secret was ${x})`;
-    $("dlBig").innerHTML = "The same search on P-256: about 2<sup>128</sup> &asymp; 3.4 &times; 10<sup>38</sup> operations. At a trillion per second that is roughly 10<sup>19</sup> years.";
-  });
-
-  document.addEventListener("themechange", () => { ecDraw(); scRender(); });
+  document.addEventListener("themechange", () => { scRender(); });
 })();

@@ -124,7 +124,7 @@
     <div class="grid g3 small">
       <div><h4>Simpler algebra</h4><p>Signing is <i>s = k + e&middot;x</i>, a single linear equation. ECDSA needs a modular inverse of <i>k</i> in every signature. That is fewer operations and fewer places for an implementation to go wrong.</p></div>
       <div><h4>Provable security</h4><p>Schnorr has a security proof that reduces forgery to solving the discrete logarithm problem (in the random oracle model). ECDSA has no comparable clean proof.</p></div>
-      <div><h4>Same compact size</h4><p>64 bytes, the same as ECDSA on P-256. We also derive the nonce from HMAC, so a weak random number generator can never leak the key. Chapter 09 shows what happens when a nonce repeats.</p></div>
+      <div><h4>Same compact size</h4><p>64 bytes, the same as ECDSA on P-256. We also derive the nonce from HMAC, so a weak random number generator can never leak the key. Chapter 08 shows what happens when a nonce repeats.</p></div>
     </div>
   </div>
 </section>
@@ -218,33 +218,12 @@
   </div>
 </section>
 
-<!-- ===================== 08 ELLIPTIC CURVES ===================== -->
-<section class="chapter wrap" id="curve" data-title="Elliptic curves">
-  <div class="chapter-head reveal">
-    <div class="folio">08</div><p class="kicker">Algorithm studio &middot; Unit 2</p><h2>Elliptic curves: a group made of points</h2>
-  </div>
-  <div class="grid g2 reveal" style="align-items:start">
-    <div>
-      <p>An elliptic curve over a prime field is the set of points (x, y) with <i>y&sup2; = x&sup3; + ax + b</i> mod p, plus a "point at infinity" O. Points can be <b>added</b>. Draw the line through P and Q, find where it meets the curve a third time, and reflect that point across the x-axis. Adding a point to itself uses the tangent line instead.</p>
-      <div class="formula">&lambda; = (y<sub>2</sub> &minus; y<sub>1</sub>) / (x<sub>2</sub> &minus; x<sub>1</sub>) &nbsp; or &nbsp; (3x<sub>1</sub>&sup2; + a) / 2y<sub>1</sub> &nbsp;&nbsp; x<sub>3</sub> = &lambda;&sup2; &minus; x<sub>1</sub> &minus; x<sub>2</sub> &nbsp;&nbsp; y<sub>3</sub> = &lambda;(x<sub>1</sub> &minus; x<sub>3</sub>) &minus; y<sub>1</sub></div>
-      <p style="margin-top:14px">"Division" means multiplying by an inverse mod p, found with Fermat's little theorem. <b>Scalar multiplication</b> <i>kP = P + P + ... + P</i> is fast using double-and-add, about 2&middot;log<sub>2</sub>k steps. Going backwards, from kP to k, is the <b>elliptic-curve discrete logarithm problem</b>. Nobody knows how to solve it on a 256-bit curve.</p>
-      <p>On the right is the toy curve <i>y&sup2; = x&sup3; + 3x + 2</i> over F<sub>97</sub>. It has 103 points, and 103 is prime, so every point generates the whole group. Click two points to add them. P-256 works the same way, with p &asymp; 2<sup>256</sup>.</p>
-      <div class="card flat" style="margin-top:12px">
-        <div class="row"><label class="field" style="flex:1">Scalar k<input type="number" id="ecK" value="37" min="1" max="102"></label><button class="btn sm" id="ecMul" type="button" style="align-self:end">Compute kG</button></div>
-        <div class="hex" id="ecSteps" style="margin-top:10px"></div>
-      </div>
-    </div>
-    <div class="card flat">
-      <canvas id="ecCanvas" width="560" height="560" class="ec-canvas" aria-label="Points of the toy curve"></canvas>
-      <div class="small" id="ecInfo" style="margin-top:10px">Click a point to choose P.</div>
-    </div>
-  </div>
-</section>
+
 
 <!-- ===================== 09 SCHNORR ===================== -->
 <section class="chapter wrap" id="schnorr" data-title="Schnorr signature">
   <div class="chapter-head reveal">
-    <div class="folio">09</div><p class="kicker">Algorithm studio &middot; Unit 3 &middot; the main algorithm</p><h2>The Schnorr signature, step by step</h2>
+    <div class="folio">08</div><p class="kicker">Algorithm studio &middot; Unit 3 &middot; the main algorithm</p><h2>The Schnorr signature, step by step</h2>
   </div>
   <div class="grid g2 reveal" style="align-items:start">
     <div>
@@ -283,66 +262,14 @@
   </div>
 </section>
 
-<!-- ===================== 10 NUMBER THEORY ===================== -->
-<section class="chapter wrap" id="numbers" data-title="Number theory">
-  <div class="chapter-head reveal">
-    <div class="folio">10</div><p class="kicker">Under the hood &middot; Unit 2</p><h2>The number theory that holds it up</h2>
-  </div>
-  <div class="grid g3 reveal" style="align-items:start">
-    <div class="card flat">
-      <h3>Fermat's little theorem</h3>
-      <p class="small">For prime p and a not divisible by p, a<sup>p&minus;1</sup> &equiv; 1 (mod p). So a<sup>p&minus;2</sup> is the inverse of a. Every point addition uses this to divide.</p>
-      <div class="row"><input type="number" id="fa" value="5" aria-label="a"><span>&minus;1 mod</span><input type="number" id="fp" value="97" aria-label="p"></div>
-      <div class="hex" id="fOut" style="margin-top:10px"></div>
-    </div>
-    <div class="card flat">
-      <h3>Miller-Rabin primality test</h3>
-      <p class="small">The curve only works if p is prime. Write p&minus;1 = 2<sup>s</sup>&middot;d. A random base a either gives a<sup>d</sup> &equiv; &plusmn;1, or reaches &minus;1 by repeated squaring. A composite number survives each round with probability at most 1/4.</p>
-      <div class="row"><select id="mrN"><option value="p">P-256 field prime p</option><option value="n">P-256 group order n</option><option value="561">561 (Carmichael)</option><option value="3p">3 &times; p</option></select><button class="btn sm" id="mrBtn" type="button">Test</button></div>
-      <div class="mr-rounds" id="mrOut"></div>
-    </div>
-    <div class="card flat">
-      <h3>Discrete logarithm</h3>
-      <p class="small">Given P = xG, find x. On the toy curve, trying every value takes at most 103 steps. On P-256 the best known attack (Pollard's rho) needs about 2<sup>128</sup> steps.</p>
-      <button class="btn sm" id="dlBtn" type="button">Break a toy key</button>
-      <div class="hex" id="dlOut" style="margin-top:10px"></div>
-      <p class="small muted" id="dlBig"></p>
-    </div>
-  </div>
-</section>
 
-<!-- ===================== 11 KEYS & PKI ===================== -->
-<section class="chapter wrap" id="keys" data-title="Keys and certificates">
-  <div class="chapter-head reveal">
-    <div class="folio">11</div><p class="kicker">Key management &middot; Units 3 and 4</p><h2>Key hierarchy, X.509 and TLS</h2>
-  </div>
-  <div class="grid g2 reveal" style="align-items:start">
-    <div>
-      <h3>Symmetric key distribution</h3>
-      <p>The gate has to check every student's HMAC tag, but storing a key per student on every scanner is fragile. Instead, keys are <b>derived</b> one level at a time with HMAC. A gate gets only the key for its own event and re-derives each student key when it scans. Click "Steal a gate" to see how far one stolen device reaches.</p>
-      <svg id="keyTree" viewBox="0 0 560 330" class="key-tree" role="img" aria-label="Key hierarchy"></svg>
-      <div class="row"><button class="btn red sm" id="stealBtn" type="button">Steal a gate</button><span class="small muted" id="stealTxt"></span></div>
-    </div>
-    <div>
-      <h3>Public key infrastructure</h3>
-      <p>How does a gate know which public key belongs to the real Pass Authority? An <b>X.509 certificate</b>, signed by a Campus Root CA whose certificate is built into ("pinned in") every gate. We generated it with OpenSSL (<code>pki/make_pki.sh</code>). The gate checks the root's signature on the certificate, its validity dates and its key usage before it trusts any pass.</p>
-      <div class="card certificate cert" id="certCard"></div>
-    </div>
-  </div>
-  <div class="card flat reveal" style="margin-top:20px">
-    <h3>HTTPS during enrolment and gate set-up</h3>
-    <div class="grid g3 small">
-      <div><span class="chip azure">1 &middot; Handshake</span><p>The phone and server agree a fresh session key using ECDHE, which is Diffie-Hellman key exchange on an elliptic curve. A recorded session cannot be decrypted later, even if the server key leaks (forward secrecy).</p></div>
-      <div><span class="chip azure">2 &middot; Authenticate</span><p>The server presents its X.509 certificate, issued by the same Campus Root CA. The browser checks the signature and the IP address in subjectAltName, which defeats a man-in-the-middle.</p></div>
-      <div><span class="chip azure">3 &middot; Protect</span><p>Records are encrypted and authenticated with AES-GCM. K<sub>se</sub> and K<sub>event</sub> only ever travel inside this channel. The QR itself carries no secret.</p></div>
-    </div>
-  </div>
-</section>
+
+
 
 <!-- ===================== 12 PIPELINE ===================== -->
 <section class="chapter wrap" id="pipeline" data-title="The gate">
   <div class="chapter-head reveal">
-    <div class="folio">12</div><p class="kicker">Verification</p><h2>Ten checks at the gate</h2>
+    <div class="folio">09</div><p class="kicker">Verification</p><h2>Ten checks at the gate</h2>
   </div>
   <div class="grid g2 reveal" style="align-items:start">
     <div>
@@ -355,64 +282,18 @@
     </div>
     <div id="pPipe"></div>
   </div>
-</section>
-
-<!-- ===================== 13 ANALYSIS ===================== -->
-<section class="chapter wrap" id="analysis" data-title="Security analysis">
-  <div class="chapter-head reveal">
-    <div class="folio">13</div><p class="kicker">Security analysis</p><h2>Every attack, and the check that stops it</h2>
-  </div>
-  <p class="lede reveal">A filled seal marks the check that rejects the attack first. A ring marks a check that would also catch it if the first one were missing (defence in depth). Every row is an automated test, and you can run each one in the <a href="/lab#threats">threat lab</a>.</p>
-  <div class="table-wrap reveal"><table class="matrix" id="matrix"></table></div>
-</section>
-
-<!-- ===================== 14 PROOF ===================== -->
-<section class="chapter wrap" id="proof" data-title="Implementation">
-  <div class="chapter-head reveal">
-    <div class="folio">14</div><p class="kicker">Practical implementation <span class="rubric-tag">Rubric 5</span></p><h2>Built from first principles, checked against the standards</h2>
-  </div>
-  <div class="grid g2 reveal" style="align-items:start">
-    <div>
-      <p>We wrote SHA-256, HMAC, the P-256 curve arithmetic and Schnorr ourselves in Python, so every step in this page is code you can read. Python's <code>cryptography</code> package (OpenSSL underneath) handles only the X.509 certificates and the TLS server. Hand-written primitives can hide subtle bugs, so each one is checked against official test vectors and against OpenSSL. The browser uses a JavaScript mirror of the same code, and a test checks that both give byte-identical output.</p>
-      <div class="table-wrap"><table class="small">
-        <tr><th>Part</th><th>File</th><th>Checked against</th></tr>
-        <tr><td>SHA-256</td><td class="mono">sealcrypto/sha256.py</td><td>FIPS 180-4 vectors, hashlib</td></tr>
-        <tr><td>HMAC</td><td class="mono">sealcrypto/hmac_.py</td><td>RFC 4231 vectors, hmac</td></tr>
-        <tr><td>P-256 arithmetic</td><td class="mono">sealcrypto/ec.py</td><td>OpenSSL public keys</td></tr>
-        <tr><td>Schnorr</td><td class="mono">sealcrypto/schnorr.py</td><td>round trip and forgery tests</td></tr>
-        <tr><td>Gate pipeline</td><td class="mono">core/verifier.py</td><td>one test per attack</td></tr>
-        <tr><td>PKI</td><td class="mono">pki/make_pki.sh</td><td>openssl verify</td></tr>
-        <tr><td>Browser mirror</td><td class="mono">static/js/crypto.js</td><td>byte-equal to Python</td></tr>
-      </table></div>
-      <p class="small muted" style="margin-top:10px">Stack: Python 3, Flask, OpenSSL, vanilla JavaScript. Run <code>pytest</code> for the full suite of 53 tests.</p>
-    </div>
-    <div class="card flat">
-      <div class="row spread"><p class="panel-title" style="margin:0">Live self-test on this server</p><button class="btn sm" id="stBtn" type="button">Run again</button></div>
-      <div id="stOut" class="selftest"></div>
-    </div>
-  </div>
-  <div class="reveal code-tabs" style="margin-top:22px">
-    <div class="seg" id="codeTabs"></div>
-    <pre class="code" id="codeView"></pre>
-  </div>
-</section>
-
-<!-- ===================== 15 LIMITS ===================== -->
-<section class="chapter wrap" id="limits" data-title="Limits">
-  <div class="chapter-head reveal">
-    <div class="folio">15</div><p class="kicker">Honest limits</p><h2>What cryptography alone cannot stop</h2>
-  </div>
-  <div class="grid g3 reveal">
-    <div class="card flat"><h3>Lending the whole phone</h3><p class="small">If a student hands over their unlocked phone, the friend holds the real key. No code can tell the two people apart. Mitigation: the gate screen shows the holder's name and roll number for a visual check, and enrolment can be tied to the device.</p></div>
-    <div class="card flat"><h3>Live relay</h3><p class="small">A friend at home can stream a live code to someone at the gate within 20 seconds. One-time use lets only one entry through, and the real student's later attempt is flagged with the time and gate of the first entry. Shorter slots narrow this further.</p></div>
-    <div class="card flat"><h3>Clock drift</h3><p class="small">The phone corrects its clock against the server at enrolment, and the gate accepts one slot either side. A phone that is badly wrong and offline will fail the freshness check. That fails safe: an honest student is asked to reopen the pass, and no cheater gets in.</p></div>
-  </div>
   <div class="cta reveal">
     <h2>See it run</h2>
     <p class="lede">Issue a pass, take a screenshot, wait, and watch the gate refuse it. Then try to forge one.</p>
     <div class="row" style="justify-content:center"><a class="btn" href="/lab">Open the lab</a><a class="btn ghost" href="/dashboard">Projector dashboard</a></div>
   </div>
 </section>
+
+
+
+
+
+
 </main>
 
 <footer><div class="wrap row spread"><span>SealPass &middot; signed, rotating QR passes</span><span class="mono small">EC-Schnorr P-256 &middot; HMAC-SHA256 &middot; X.509 &middot; TLS</span></div></footer>
